@@ -1,10 +1,7 @@
 FROM fedora:22
-MAINTAINER Michal Karm Babacek <karm@redhat.com>
 
-##
 ## This is supposed to be a developer _toy_ Docker image one might
 ## find useful while playing with mod_cluster smart load balancer.
-##
 
 ## Constants
 
@@ -79,6 +76,18 @@ RUN sed -i 's/LogLevel warn/LogLevel debug/g' ${HTTPD_MC_BUILD_DIR}/conf/httpd.c
     ${HTTPD_MC_BUILD_DIR}/bin/apachectl stop && \
     rm -rf ${HTTPD_MC_BUILD_DIR}/logs/* && rm -rf ${HTTPD_MC_BUILD_DIR}/cache/*
 
+# Maven build mod_cluster for JBoss
+ENV JAVA_VERSION 7u75
+ENV BUILD_VERSION b13
+
+# Upgrading system
+RUN curl -L -k  -H "Cookie: oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/$JAVA_VERSION-$BUILD_VERSION/jdk-$JAVA_VERSION-linux-x64.rpm" > /tmp/jdk-7-linux-x64.rpm
+RUN dnf -y install /tmp/jdk-7-linux-x64.rpm
+RUN alternatives --install /usr/bin/java jar /usr/java/latest/bin/java 200000 && \
+    alternatives --install /usr/bin/javaws javaws /usr/java/latest/bin/javaws 200000 && \
+    alternatives --install /usr/bin/javac javac /usr/java/latest/bin/javac 200000
+
+ENV JAVA_HOME /usr/java/latest
 
 EXPOSE 80/tcp
 EXPOSE 6666/tcp
